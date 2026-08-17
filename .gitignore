@@ -1,0 +1,6 @@
+.venv/
+build-ciasny/
+build-odstep/
+__pycache__/
+*.pyc
+.DS_Store
