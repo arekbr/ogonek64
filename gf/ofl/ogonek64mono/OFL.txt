@@ -1,4 +1,4 @@
-Copyright 2026 The Ogonek 64 Project Authors (https://github.com/arekbr/ogonek64)
+Copyright 2026 The Ogonek 64 Mono Project Authors (https://github.com/arekbr/ogonek64)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:

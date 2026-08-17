@@ -8,11 +8,14 @@ Czyta src/glify-baza.txt (baza łacińska), dokłada:
 
 Wynik: src/glify-dodatki.txt + src/glify-pl.txt (format czytelny, edytowalny ręcznie).
 
-Siatka 8 x 10, wiersze w kolejności od góry:
-  indeks 0 = 'A'  wiersz akcentu nad WIELKĄ literą (jedyny wolny nad korpusem)
-  indeks 1..7     korpus ROM (wielkie zajmują 1..7, małe 3..7)
-  indeks 8        zejście pod linię bazową (descender: g j p q y; górny wiersz ogonka)
-  indeks 9        drugi wiersz zejścia (dolny wiersz ogonka)
+Siatka 8 x 12, wiersze w kolejności od góry:
+  0, 1     akcent — DWA wiersze, bo w jednym nie odróżnisz daszka od haczka
+  2        odstęp między akcentem a literą
+  3..9     korpus (wielkie litery zajmują dokładnie te 7 wierszy)
+  10       zejście pod linię bazową (descender: g j p q y; górny wiersz ogonka)
+  11       drugi wiersz zejścia (dolny wiersz ogonka)
+
+Małe litery (x-height) zajmują 5..9, więc ich akcent siedzi w 2..3, a odstęp w 4.
 
 Nad MAŁĄ literą wolne są wiersze 1 i 2 — dlatego małe litery dostają akcent
 dwuwierszowy (prawdziwy ukos), a wielkie jednowierszowy, płaski. To nie
@@ -22,7 +25,7 @@ są spłaszczane, żeby nie rozpychać interlinii.
 import os, sys, re
 
 KAT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SZER, WYS = 8, 10
+SZER, WYS = 8, 12
 
 # ── wczytanie bazy ────────────────────────────────────────────────────────────
 WIERSZ_GLIFU = re.compile(r"^[.#]{%d}$" % SZER)
@@ -91,8 +94,8 @@ def zakres_kolumn(g):
 
 # ── AKCENTY (nasz projekt) ────────────────────────────────────────────────────
 # nad WIELKĄ: jeden wiersz (indeks 0), płaski
-OSTRY_DUZY  = wzor(w0="....##..")   # ´ 2px, przesunięty w prawo
-KROPKA_DUZA = wzor(w0="...#....")   # ˙ 1px na środku — CIEŃSZA niż ostry
+OSTRY_DUZY  = wzor(w0=".....##.", w1="....##..")   # ´ ukos, 2 wiersze
+KROPKA_DUZA = wzor(w1="...##...")   # ˙ 2px na środku
 # 🔴 mina z dziennika 15.08: Ź i Ż różniące się tylko POZYCJĄ były nieodróżnialne.
 #    Rozróżniamy GRUBOŚCIĄ: ostry = 2px w prawo, kropka = 1px na środku.
 
@@ -101,15 +104,15 @@ KROPKA_DUZA = wzor(w0="...#....")   # ˙ 1px na środku — CIEŃSZA niż ostry
 # przylegałby do nich bez przerwy i zlewał się w bryłę — dokładnie ten sam
 # błąd, co nad wielkimi. Rezygnuję z ukosu dwuwierszowego na rzecz spójności
 # z wielkimi literami i czytelnej przerwy.
-OSTRY_MALY  = wzor(w1="....##..")
-KROPKA_MALA = wzor(w1="...#....")
+OSTRY_MALY  = wzor(w2=".....##.", w3="....##..")
+KROPKA_MALA = wzor(w3="...##...")
 
 # ogonek — dwa wiersze pod linią bazową (8..9)
 def ogonek(kol):
     """ogonek zaczepiony pod kolumną `kol`"""
     g = pusty()
-    g[8] = "".join("#" if i in (kol, kol + 1) else "." for i in range(SZER))
-    g[9] = "".join("#" if i in (kol - 1, kol) else "." for i in range(SZER))
+    g[10] = "".join("#" if i in (kol, kol + 1) else "." for i in range(SZER))
+    g[11] = "".join("#" if i in (kol - 1, kol) else "." for i in range(SZER))
     return g
 
 def trzon(g):
@@ -151,33 +154,33 @@ def main():
     # \ = lustrzane odbicie /
     if 0x2F in baza:
         dod[0x5C] = ("REVERSE SOLIDUS", odbij(baza[0x2F][1]))
-    dod[0x5E] = ("CIRCUMFLEX ACCENT", wzor(w1="...##...", w2="..####..", w3=".##..##."))
-    dod[0x5F] = ("LOW LINE",          wzor(w8="########"))
-    dod[0x60] = ("GRAVE ACCENT",      wzor(w1="..##....", w2="...##..."))
+    dod[0x5E] = ("CIRCUMFLEX ACCENT", wzor(w3="...##...", w4="..####..", w5=".##..##."))
+    dod[0x5F] = ("LOW LINE",          wzor(w10="########"))
+    dod[0x60] = ("GRAVE ACCENT",      wzor(w3="..##....", w4="...##..."))
     dod[0x7B] = ("LEFT CURLY BRACKET",
-                 wzor(w1="...###..", w2="..##....", w3="..##....", w4=".##.....",
-                      w5="..##....", w6="..##....", w7="...###.."))
+                 wzor(w3="...###..", w4="..##....", w5="..##....", w6=".##.....",
+                      w7="..##....", w8="..##....", w9="...###.."))
     dod[0x7C] = ("VERTICAL LINE",
-                 wzor(w1="...##...", w2="...##...", w3="...##...", w4="...##...",
-                      w5="...##...", w6="...##...", w7="...##..."))
+                 wzor(w3="...##...", w4="...##...", w5="...##...", w6="...##...",
+                      w7="...##...", w8="...##...", w9="...##..."))
     dod[0x7D] = ("RIGHT CURLY BRACKET", odbij(dod[0x7B][1]))
     # 🔴 Tylda przy 2 px kresce MUSI byc CIAGLA. Cztery odrzucone warianty (ukosna,
     # garb+dolina, symetryczna, obecna) czytaly sie jako dwie oddzielne plamki, bo
     # segmenty sie nie stykaly. Ten dziala, bo kolumna 3 nalezy do OBU wierszy.
-    dod[0x7E] = ("TILDE", wzor(w4=".###....", w5="...####."))
+    dod[0x7E] = ("TILDE", wzor(w6=".###....", w7="...####."))
 
     # ══ 2. polska interpunkcja ════════════════════════════════════════════════
     # „ ” ‚ ’ z cudzysłowów bazowych, – — z łącznika, … z kropek
     if 0x22 in baza:
         cud = baza[0x22][1]
         gora = [w for w in cud if "#" in w]
-        dod[0x201D] = ("RIGHT DOUBLE QUOTATION MARK", wzor(w1=".##.##..", w2=".#..#..."))
-        dod[0x201E] = ("DOUBLE LOW-9 QUOTATION MARK", wzor(w7=".##.##..", w8="..#..#.."))
-    dod[0x2019] = ("RIGHT SINGLE QUOTATION MARK", wzor(w1="...##...", w2="...#...."))
-    dod[0x201A] = ("SINGLE LOW-9 QUOTATION MARK",  wzor(w7="...##...", w8="..#....."))
-    dod[0x2013] = ("EN DASH",  wzor(w5="..####.."))
-    dod[0x2014] = ("EM DASH",  wzor(w5=".######."))
-    dod[0x2026] = ("HORIZONTAL ELLIPSIS", wzor(w7="#..#..#."))
+        dod[0x201D] = ("RIGHT DOUBLE QUOTATION MARK", wzor(w3=".##.##..", w4=".#..#..."))
+        dod[0x201E] = ("DOUBLE LOW-9 QUOTATION MARK", wzor(w9=".##.##..", w10="..#..#.."))
+    dod[0x2019] = ("RIGHT SINGLE QUOTATION MARK", wzor(w3="...##...", w4="...#...."))
+    dod[0x201A] = ("SINGLE LOW-9 QUOTATION MARK",  wzor(w9="...##...", w10="..#....."))
+    dod[0x2013] = ("EN DASH",  wzor(w7="..####.."))
+    dod[0x2014] = ("EM DASH",  wzor(w7=".######."))
+    dod[0x2026] = ("HORIZONTAL ELLIPSIS", wzor(w9="#..#..#."))
     dod[0x00A0] = ("NO-BREAK SPACE", pusty())
 
     # ══ 3. polskie diakryty ═══════════════════════════════════════════════════

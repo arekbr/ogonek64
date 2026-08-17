@@ -1,8 +1,12 @@
 # Ogonek 64
 
-Pikselowy krój pisma w siatce 8×11 **z pełnym zestawem polskich znaków** — czyli to,
-czego oryginał nigdy nie miał. Cztery odmiany, licencja SIL OFL 1.1, budowa z czytelnego
-źródła tekstowego.
+Pikselowy krój pisma w siatce 8×12 **z pełnym zestawem polskich znaków** — czyli to,
+czego oryginał nigdy nie miał. Do tego **komplet GF Latin Core (319 znaków)**: akcenty
+francuskie, niemieckie, czeskie, węgierskie, skandynawskie, waluty i interpunkcja.
+Cztery odmiany, licencja SIL OFL 1.1, budowa z czytelnego źródła tekstowego.
+
+✅ **Przechodzi QA Google Fonts bez zarzutu** — `fontbakery check-googlefonts`:
+**0 FAIL** na 455 kontrolach dla każdej z trzech rodzin.
 
 ![Ogonek 64 Mono](docs/mono-regular.png)
 
@@ -10,22 +14,27 @@ czego oryginał nigdy nie miał. Cztery odmiany, licencja SIL OFL 1.1, budowa z 
 
 | plik | rodzina | styl | do czego |
 |---|---|---|---|
-| `Ogonek64-Mono-Regular.ttf` | Ogonek 64 Mono | Regular | terminal, kod, wszystko o stałej szerokości |
-| `Ogonek64-Mono-Bold.ttf` | Ogonek 64 Mono | Bold | pogrubienie w tej samej rodzinie, więc terminal użyje go sam |
-| `Ogonek64-Sans-Regular.ttf` | Ogonek 64 Sans | Regular | teksty ciągłe — szerokość liczona per litera |
-| `Ogonek64-CRT-Regular.ttf` | Ogonek 64 CRT | Regular | linie wygaszenia i poświata kineskopu |
+| `Ogonek64Mono-Regular.ttf` | Ogonek 64 Mono | Regular | terminal, kod, wszystko o stałej szerokości |
+| `Ogonek64Mono-Bold.ttf` | Ogonek 64 Mono | Bold | pogrubienie w tej samej rodzinie, więc terminal użyje go sam |
+| `Ogonek64Sans-Regular.ttf` | Ogonek 64 Sans | Regular | teksty ciągłe — szerokość liczona per litera |
+| `Ogonek64CRT-Regular.ttf` | Ogonek 64 CRT | Regular | linie wygaszenia i poświata kineskopu |
 
-Każda odmiana ma **124 znaki**: pełne ASCII `0x20–0x7E` (95), 18 polskich diakrytów,
-polską interpunkcję (`„ ” ‚ ’ – — …`) i kilka znaków z oryginalnego zestawu (`£ ↑ ←`).
+Każda odmiana ma **321 znaków**: pełne ASCII `0x20–0x7E`, 18 polskich diakrytów, komplet
+**GF Latin Core** (akcenty europejskie, `Æ Ø Þ Ð Œ ß`, waluty `€ ¢ ¥`, symbole `© ® ™ × ÷`),
+14 akcentów składających o zerowej szerokości, polską interpunkcję (`„ ” ‚ ’ – — …`)
+oraz znaki z oryginalnego zestawu (`£ ↑ ←`).
 
 ## Polskie znaki
 
 `Ą Ć Ę Ł Ń Ó Ś Ź Ż ą ć ę ł ń ó ś ź ż` — zaprojektowane od nowa, bo w pierwowzorze
-nie istnieją. Trzy decyzje, które warto znać:
+nie istnieją. Cztery decyzje, które warto znać:
 
-- **Akcent ma własny wiersz i 1 piksel odstępu od litery.** Bez tego `Ż` czyta się
-  jak `Z` z guzem, a `Ź` i `Ż` stają się nierozróżnialne. Cena: komórka 8×11 zamiast
-  8×8, czyli interlinia 1.375 em.
+- **Akcent ma DWA własne wiersze i piksel odstępu od litery.** Bez odstępu `Ż` czyta się
+  jak `Z` z guzem; przy jednym wierszu `ˆ ˇ ˘ ˚ ¨ ˜ ˝` zlewają się w tę samą plamkę.
+  Cena: komórka 8×12 zamiast 8×8, czyli interlinia 1.5 em.
+- **Pozycja akcentu jest wyliczana z górnej krawędzi litery**, nie wpisana na sztywno.
+  Wielkie litery, wznoszące (`d k l t`) i x-height mają trzy różne wysokości — sztywny
+  podział wywracał się na 13 znakach. Akcent nad `i`/`j` zastępuje kropkę.
 - **`Ź` i `Ż` różnią się GRUBOŚCIĄ, nie pozycją** — kreska 2 px przesunięta w prawo
   kontra kropka 1 px na środku. Rozróżnianie samym przesunięciem o piksel nie działa;
   sprawdzone i odrzucone.
@@ -41,7 +50,9 @@ czytelny plik tekstowy, w którym `#` to zapalony piksel, a `.` zgaszony:
 
 ```
 U+0104 LATIN CAPITAL LETTER A WITH OGONEK
-........
+........      <- wiersz akcentu (górny)
+........      <- wiersz akcentu (dolny)
+........      <- odstęp
 ...##...
 ..####..
 .##..##.
@@ -49,7 +60,7 @@ U+0104 LATIN CAPITAL LETTER A WITH OGONEK
 .##..##.
 .##..##.
 .##..##.
-.....##.
+.....##.      <- ogonek
 ....##..
 ```
 
@@ -68,15 +79,20 @@ python3 -m venv .venv --system-site-packages
 .venv/bin/pip install "fonttools[pathops,woff]" pillow
 
 .venv/bin/python lib/zrob_glify.py     # glify pochodne -> src/glify-{dodatki,pl}.txt
+.venv/bin/python lib/glify_latin.py    # GF Latin Core -> src/glify-latin.txt
 .venv/bin/python lib/buduj.py          # -> build/*.ttf
-.venv/bin/python tests/kontrola.py     # kontrola tabel + rendery PNG
+.venv/bin/python tests/kontrola.py     # kontrola tabel + pokrycie Latin Core + rendery
 ```
 
-Wariant ciasny, bez odstępu akcentu (8×10, interlinia 1.25 em):
+QA profilem Google Fonts (katalog `gf/` ma układ wymagany przez repozytorium `google/fonts`):
 
 ```bash
-OGONEK_ODSTEP=0 .venv/bin/python lib/buduj.py   # -> build-ciasny/
+.venv/bin/pip install fontbakery shaperglot gftools glyphsets
+.venv/bin/fontbakery check-googlefonts --succinct -l FAIL gf/ofl/ogonek64mono/*.ttf
 ```
+
+🔴 Uruchamiaj QA na kopii **poza** drzewem projektu — inaczej kontrola `has_license`
+zobaczy nasz główny `OFL.txt` w katalogu wyżej i zgłosi „dwie licencje".
 
 ## Instalacja
 
@@ -90,13 +106,17 @@ cp build/*.ttf ~/.local/share/fonts/ && fc-cache -f   # Linux
 ```
 unitsPerEm 2048, 1 piksel = 256 jednostek
 
- wiersz 0     2304 .. 2048   akcent nad wielką literą     ascender  2304
-              2048 .. 1792   odstęp akcentu (1 px)
- wiersze 1..7 1792 ..    0   korpus                       capHeight 1792
-                              małe litery od wiersza 3    x-height  1280
- wiersz 8        0 ..  -256  descender: g j p q y
- wiersz 9     -256 ..  -512  dolny wiersz ogonka          descender  -512
+ wiersze 0,1  2560 .. 2048   akcent (dwa wiersze)         ascender  2560
+ wiersz 2     2048 .. 1792   odstęp akcentu
+ wiersze 3..9 1792 ..    0   korpus                       capHeight 1792
+                              małe litery od wiersza 5    x-height  1280
+ wiersz 10       0 ..  -256  descender: g j p q y
+ wiersz 11    -256 ..  -512  dolny wiersz ogonka          descender  -512
 ```
+
+Nazwy plików trzymają konwencję Google Fonts (`Rodzina-Styl.ttf`, bez spacji), `fsType 0`,
+`OS/2` w wersji 4 z bitem `USE_TYPO_METRICS`, tabele `gasp` i `prep` (smart dropout),
+kontury zgodne z ruchem wskazówek zegara.
 
 Piksele nie są zapisywane jako osobne prostokąty — najpierw scalane w poziome ciągi,
 potem w pionowe bloki, na końcu `removeOverlaps` (skia-pathops) zlepia je w jeden
@@ -104,9 +124,13 @@ kontur na glif.
 
 ## Licencja i autorstwo
 
-**Zrobił to SMOK** — Arek Bronowicki. Nazwa siedzi w metadanych każdego pliku
-(`copyright`, `manufacturer`, `designer`, `unique ID`), więc widać ją w każdym
-menedżerze czcionek, nie tylko w tym README.
+**Zrobił to SMOK** — Arek Bronowicki. Nazwa siedzi w metadanych każdego pliku, w polach
+`designer` i `manufacturer`, więc widać ją w każdym menedżerze czcionek.
+
+ℹ️ Pole `copyright` ma brzmienie narzucone przez Google Fonts —
+*„Copyright 2026 The Ogonek 64 … Project Authors (adres repozytorium)"*. Ich kontrola
+`font_copyright` porównuje ten napis ze wzorem znak w znak i nie dopuszcza nazwy autora
+w tym miejscu; stąd autorstwo wskazują `designer`, `manufacturer` i `AUTHORS.txt`.
 
 Font i skrypty: **SIL Open Font License 1.1** — [`OFL.txt`](OFL.txt), **bez**
 Reserved Font Name.

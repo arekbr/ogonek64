@@ -1,6 +1,7 @@
 .venv/
 build-ciasny/
 build-odstep/
+gf-czysty*/
 __pycache__/
 *.pyc
 .DS_Store

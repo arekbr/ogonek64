@@ -3,9 +3,15 @@
 
 Zwrotka „font zbudowany" nic nie dowodzi — dowodem jest obraz i odczyt tabel.
 """
-import os, sys
+import os, sys, unicodedata
 from fontTools.ttLib import TTFont
 from PIL import Image, ImageDraw, ImageFont
+try:
+    import glyphsets
+    LATIN_CORE = set(glyphsets.unicodes_per_glyphset("GF_Latin_Core"))
+except Exception as e:
+    LATIN_CORE = None
+    print(f"UWAGA: brak paczki glyphsets ({e}) — pomijam kontrole GF Latin Core")
 
 KAT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BUILD = os.path.join(KAT, "build")
@@ -32,7 +38,13 @@ def sprawdz_tabele(sciezka):
     mono = f["post"].isFixedPitch
     adv = {a for a, _ in hmtx.values()}
     os2, head, hhea = f["OS/2"], f["head"], f["hhea"]
+    comb = [c for c in cmap if unicodedata.category(chr(c)) == "Mn"]
+    comb_zle = [c for c in comb if hmtx[cmap[c]][0] != 0]
+    adv_zwykle = {a for c, (a, _) in ((c, hmtx[n]) for c, n in cmap.items())
+                  if unicodedata.category(chr(c)) != "Mn"}
     wynik = dict(
+        braki_core=sorted(LATIN_CORE - set(cmap)) if LATIN_CORE else None,
+        combining=len(comb), comb_zle=comb_zle, adv_zwykle=len(adv_zwykle),
         nazwa=f"{f['name'].getDebugName(1)} {f['name'].getDebugName(2)}",
         glifow=len(f.getGlyphOrder()), znakow=len(cmap),
         braki_pl=braki_pl, braki_ascii=braki_ascii,
@@ -69,17 +81,30 @@ def main():
         ok_pl = "✓ 18/18" if not w["braki_pl"] else f"✗ BRAK: {''.join(w['braki_pl'])}"
         ok_as = "✓ 95/95" if not w["braki_ascii"] else f"✗ BRAK: {''.join(w['braki_ascii'])}"
         print(f"  polskie znaki: {ok_pl}    ASCII 0x20-0x7E: {ok_as}")
+        if w["braki_core"] is not None:
+            n = len(w["braki_core"])
+            if n == 0:
+                print(f"  GF Latin Core: ✓ KOMPLET ({len(LATIN_CORE)} znaków) — wymóg Google Fonts")
+            else:
+                print(f"  GF Latin Core: ✗ BRAK {n}: " +
+                      " ".join(f"U+{c:04X}({chr(c)})" for c in w["braki_core"][:15]))
+                blad = True
+        print(f"  akcenty składające: {w['combining']} " +
+              ("✓ wszystkie zerowej szerokości" if not w["comb_zle"]
+               else f"✗ {len(w['comb_zle'])} ma niezerową szerokość!"))
+        if w["comb_zle"]:
+            blad = True
         if w["braki_pl"] or w["braki_ascii"]:
             blad = True
-        if w["mono"] and w["unikalnych_advance"] != 1:
-            print(f"  ✗ font mono, a ma {w['unikalnych_advance']} różnych szerokości!")
+        if w["mono"] and w["adv_zwykle"] != 1:
+            print(f"  ✗ font mono, a znaki zwykłe mają {w['adv_zwykle']} różnych szerokości!")
             blad = True
 
     # ── RENDER ────────────────────────────────────────────────────────────────
     ROZM, MARG = 40, 24
     for p in pliki:
         font = ImageFont.truetype(os.path.join(BUILD, p), ROZM)
-        interlinia = int(ROZM * 1.25) + 6
+        interlinia = int(ROZM * 1.5) + 6      # 1.5 em = wysokosc z metryk fonta
         wys = MARG * 2 + interlinia * (len(PROBKI) + 1)
         szer = 760
         img = Image.new("RGB", (szer, wys), (32, 40, 96))       # tło jak C64
@@ -96,7 +121,7 @@ def main():
     for p in pliki:
         linie.append((p.replace("Ogonek64-", "").replace(".ttf", ""),
                       ImageFont.truetype(os.path.join(BUILD, p), ROZM)))
-    interlinia = int(ROZM * 1.25) + 10
+    interlinia = int(ROZM * 1.5) + 10
     img = Image.new("RGB", (860, MARG * 2 + interlinia * len(linie) * 2), (32, 40, 96))
     d = ImageDraw.Draw(img)
     y = MARG
