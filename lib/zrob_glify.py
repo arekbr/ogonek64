@@ -161,7 +161,10 @@ def main():
                  wzor(w1="...##...", w2="...##...", w3="...##...", w4="...##...",
                       w5="...##...", w6="...##...", w7="...##..."))
     dod[0x7D] = ("RIGHT CURLY BRACKET", odbij(dod[0x7B][1]))
-    dod[0x7E] = ("TILDE", wzor(w2="..##..#.", w3=".#..##.."))
+    # 🔴 Tylda przy 2 px kresce MUSI byc CIAGLA. Cztery odrzucone warianty (ukosna,
+    # garb+dolina, symetryczna, obecna) czytaly sie jako dwie oddzielne plamki, bo
+    # segmenty sie nie stykaly. Ten dziala, bo kolumna 3 nalezy do OBU wierszy.
+    dod[0x7E] = ("TILDE", wzor(w4=".###....", w5="...####."))
 
     # ══ 2. polska interpunkcja ════════════════════════════════════════════════
     # „ ” ‚ ’ z cudzysłowów bazowych, – — z łącznika, … z kropek

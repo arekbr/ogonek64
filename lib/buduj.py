@@ -51,7 +51,7 @@ ASCENDER  = 2048 + ODSTEP_AKCENTU
 DESCENDER = -512
 CAP       = 1792
 XHEIGHT   = 1280
-WERSJA    = "1.000"
+WERSJA    = "1.001"
 ROK       = 2026
 
 # ── geometria ────────────────────────────────────────────────────────────────
@@ -156,7 +156,8 @@ def zbuduj(odmiana, glify, katalog):
                 advance = 3 * PX
         else:
             dx = -min(kolumny) * PX            # dosuń do lewej krawędzi
-            advance = (max(kolumny) - min(kolumny) + 1) * PX + PX   # +1 px odstępu
+            advance = (max(kolumny) - min(kolumny) + 1) * PX + 2*PX
+            # 2 px, nie 1: przy 1 px litery jak ż/ó zlepialy sie w renderze
 
         pen = TTGlyphPen(None)
         for (x0, y0, x1, y1) in prost:
