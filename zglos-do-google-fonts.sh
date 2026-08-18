@@ -28,7 +28,12 @@ echo "   🔴 To MUSI byc ten sam adres, ktorym podpisales CLA. Jesli nie — pr
 read -r -p "   Zgadza sie? [T/n] " o; case "${o:-t}" in [TtYy]*) ;; *) echo "przerwane"; exit 1 ;; esac
 
 echo "▶ 2/5  Fork google/fonts (jesli jeszcze nie masz)"
-gh repo fork google/fonts --clone=false --remote=false 2>&1 | sed 's/^/   /' || true
+# --remote NIE dziala razem z argumentem repozytorium (gh wypisuje pomoc
+# i NIE robi forka). --default-branch-only oszczedza miejsce po stronie GitHuba.
+gh repo fork google/fonts --clone=false --default-branch-only 2>&1 | sed 's/^/   /' || true
+# kontrola: fork MUSI istniec, zanim ruszymy dalej — inaczej clone leci w pustke
+KONTO_TMP=$(gh api user -q .login)
+gh api "repos/$KONTO_TMP/fonts" >/dev/null 2>&1 || { echo "   ✗ fork nie powstal — przerywam"; exit 1; }
 
 echo "▶ 3/5  Klon plytki i rzadki (repo ma 3 GB, bierzemy tylko to, co trzeba)"
 KONTO=$(gh api user -q .login)
@@ -37,15 +42,18 @@ if [ ! -d "$PRACA/.git" ]; then
     # --filter=blob:none  -> bloby sciagane na zadanie, nie wszystkie 3 GB
     # --sparse            -> w katalogu roboczym tylko wybrane sciezki
     git clone --filter=blob:none --sparse "https://github.com/$KONTO/fonts.git" "$PRACA"
-    cd "$PRACA"
-    git sparse-checkout set ofl/ogonek64mono ofl/ogonek64sans ofl/ogonek64crt
-    git remote add upstream https://github.com/google/fonts.git
+    # 🔴 `cd` MUSI byc polaczone z reszta przez &&. Jesli katalog nie powstal, a `cd`
+    #    stoi w osobnej linii, to `git sparse-checkout set` wykona sie w BIEZACYM
+    #    katalogu — czyli w cudzym repozytorium — i cicho ukryje w nim wszystkie pliki
+    #    nie pasujace do wzorca. Zdarzylo sie 18.08 na repo ogonek64.
+    cd "$PRACA" && \
+      git sparse-checkout set ofl/ogonek64mono ofl/ogonek64sans ofl/ogonek64crt && \
+      git remote add upstream https://github.com/google/fonts.git
 else
-    cd "$PRACA"
     echo "   katalog juz istnieje — odswiezam z upstreamu"
 fi
 
-cd "$PRACA"
+cd "$PRACA" || { echo "   ✗ brak katalogu roboczego $PRACA — przerywam"; exit 1; }
 git fetch upstream "$GALEZ_BAZOWA" --quiet
 git checkout -q -B "$GALEZ_BAZOWA" "upstream/$GALEZ_BAZOWA"
 
@@ -53,8 +61,11 @@ echo "▶ 4/5  Trzy galezie, po jednej na rodzine"
 for wpis in "${RODZINY[@]}"; do
     KAT="${wpis%%:*}"; NAZWA="${wpis#*:}"
     git checkout -q -B "$KAT" "upstream/$GALEZ_BAZOWA"
+    # kontrola zrodla PRZED kopiowaniem — inaczej powstanie pusty commit
+    [ -d "$ZRODLO/$KAT" ] || { echo "   ✗ brak katalogu zrodlowego $ZRODLO/$KAT"; exit 1; }
     mkdir -p "ofl/$KAT"
     cp -r "$ZRODLO/$KAT/." "ofl/$KAT/"
+    [ -n "$(git status --porcelain "ofl/$KAT")" ] || { echo "   ✗ nic nie doszlo do ofl/$KAT"; exit 1; }
     git add "ofl/$KAT"
     git commit -q -m "$NAZWA: Version 1.003 added
 
