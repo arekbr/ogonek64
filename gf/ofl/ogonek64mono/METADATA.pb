@@ -2,7 +2,7 @@ name: "Ogonek 64 Mono"
 designer: "SMOK - Arek Bronowicki"
 license: "OFL"
 category: "MONOSPACE"
-date_added: "2026-08-17"
+date_added: "2026-08-18"
 fonts {
   name: "Ogonek 64 Mono"
   style: "normal"

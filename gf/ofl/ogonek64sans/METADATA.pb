@@ -2,7 +2,7 @@ name: "Ogonek 64 Sans"
 designer: "SMOK - Arek Bronowicki"
 license: "OFL"
 category: "SANS_SERIF"
-date_added: "2026-08-17"
+date_added: "2026-08-18"
 fonts {
   name: "Ogonek 64 Sans"
   style: "normal"
