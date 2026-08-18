@@ -168,15 +168,20 @@ def bez_kropki(siatka):
     return out
 
 def jako_znak(wzorzec_akcentu):
-    """akcent jako SAMODZIELNY znak (´ ¨ ˆ ˇ ˜ ¯ ˘ ˙ ˚ ˝ ¸ ˛):
-    ten sam wzór, ale opuszczony do wysokości x-height, żeby nie wisiał w pustce"""
+    """akcent jako SAMODZIELNY znak (´ ¨ ˆ ˇ ˜ ¯ ˘ ˙ ˚ ˝).
+
+    🔴 Siedzi DOKŁADNIE tam, gdzie akcent nad wielką literą (wiersze 0-1). Pierwsza
+    wersja opuszczała go do połowy wysokości litery „żeby nie wisiał w pustce" — to był
+    błąd: `´` obok `Á` musi być na tej samej wysokości, inaczej wygląda jak inny znak.
+    Wychwycone dopiero na arkuszu wszystkich glifów, nie przez kontrolę tabel.
+    """
     gora, dol = wzorzec_akcentu
     g = pusty()
     if gora is not None:
-        g[5] = gora
-        g[6] = dol
+        g[0] = gora
+        g[1] = dol
     else:
-        g[6] = dol
+        g[1] = dol
     return g
 
 # ══ GLIFY RYSOWANE OD ZERA ════════════════════════════════════════════════════
@@ -213,10 +218,10 @@ RYSOWANE = {
     w7=".##...##", w8=".##...##", w9=".##.####")),
 0x00AA: ("FEMININE ORDINAL INDICATOR", dict(
     w3="..####..", w4=".....##.", w5="..#####.", w6=".##..##.",
-    w7="..#####.", w8="..######")),
+    w7="..#####.", w8="..#####.")),
 0x00BA: ("MASCULINE ORDINAL INDICATOR", dict(
     w3="..####..", w4=".##..##.", w5=".##..##.", w6=".##..##.",
-    w7="..####..", w8="..######")),
+    w7="..####..", w8="..#####.")),
 # ── symbole ──
 0x00A2: ("CENT SIGN", dict(
     w4="....##..", w5="..#####.", w6=".##.....", w7=".##.....",

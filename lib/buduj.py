@@ -52,7 +52,7 @@ ASCENDER  = 2560                # wiersz 0 sięga 10 px nad linię bazową
 DESCENDER = -512
 CAP       = 1792
 XHEIGHT   = 1280
-WERSJA    = "1.002"
+WERSJA    = "1.003"
 ROK       = 2026
 
 # ── geometria ────────────────────────────────────────────────────────────────
