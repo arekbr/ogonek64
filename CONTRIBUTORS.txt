@@ -1,0 +1,12 @@
+# This is the list of people who have contributed to this project,
+# and who are not listed in AUTHORS.txt.
+#
+# Contributors keep the copyright to their own work; by contributing they agree
+# to license it under the SIL Open Font License 1.1, the same terms as the rest
+# of this project.
+#
+# Names should be added to this file as:
+# Name <email address or profile URL>
+
+Piotr Andrzejczak — the remark that a C64 font ought to be freely available,
+which is what started this project.

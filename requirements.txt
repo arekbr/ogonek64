@@ -1,0 +1,6 @@
+# Wszystko, czego potrzebuje ./build.sh
+#   pip install -r requirements.txt
+
+fonttools[pathops,woff]>=4.57   # budowa TTF, removeOverlaps, kompresja WOFF2
+pillow>=11.0                    # rendery kontrolne i arkusz znaków
+glyphsets>=1.1                  # lista GF Latin Core prosto od Google, bez przepisywania z ręki

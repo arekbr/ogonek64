@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """ogonek64 — generator fontów TrueType z tekstowego źródła glifów.
 
-Czyta src/glify-{baza,dodatki,pl}.txt i buduje rodziny:
+Czyta sources/glify-{baza,dodatki,pl}.txt i buduje rodziny:
 
   Ogonek 64 Mono   Regular / Bold   stała szerokość, do terminala i kodu
   Ogonek 64 Sans   Regular          szerokość liczona per litera
@@ -120,7 +120,7 @@ def nazwa_glifu(cp):
 def zbierz_glify():
     g = {}
     for plik in ("glify-baza.txt", "glify-dodatki.txt", "glify-pl.txt", "glify-latin.txt"):
-        for cp, (opis, siatka) in czytaj(os.path.join(KAT, "src", plik)).items():
+        for cp, (opis, siatka) in czytaj(os.path.join(KAT, "sources", plik)).items():
             if cp in g:
                 raise ValueError(f"U+{cp:04X} zdefiniowany dwa razy (ostatni: {plik})")
             g[cp] = siatka
@@ -288,7 +288,7 @@ def zbuduj(odmiana, glify, katalog):
 
 def main():
     glify = zbierz_glify()
-    kat = os.path.join(KAT, "build")
+    kat = os.path.join(KAT, "fonts", "ttf")
     os.makedirs(kat, exist_ok=True)
     print(f"glify wejściowe: {len(glify)}")
     print(f"UPM {UPM} · piksel {PX} · ascender {ASCENDER} · descender {DESCENDER} "

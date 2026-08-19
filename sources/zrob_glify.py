@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """ogonek64 — generator glifów dodatkowych i polskich.
 
-Czyta src/glify-baza.txt (baza łacińska), dokłada:
+Czyta sources/glify-baza.txt (baza łacińska), dokłada:
   * 8 znaków ASCII, których C64 nie ma:  \\ ^ _ ` { | } ~
   * 18 polskich diakrytów
   * polską interpunkcję: „ " ‚ ' – — …
 
-Wynik: src/glify-dodatki.txt + src/glify-pl.txt (format czytelny, edytowalny ręcznie).
+Wynik: sources/glify-dodatki.txt + sources/glify-pl.txt (format czytelny, edytowalny ręcznie).
 
 Siatka 8 x 12, wiersze w kolejności od góry:
   0, 1     akcent — DWA wiersze, bo w jednym nie odróżnisz daszka od haczka
@@ -146,7 +146,7 @@ def kreska_L(g):
     return el
 
 def main():
-    baza = czytaj(os.path.join(KAT, "src", "glify-baza.txt"))
+    baza = czytaj(os.path.join(KAT, "sources", "glify-baza.txt"))
     print(f"baza: {len(baza)} glifów")
 
     # ══ 1. brakujące ASCII ════════════════════════════════════════════════════
@@ -236,9 +236,9 @@ def main():
         open(sciezka, "w", encoding="utf-8").write("\n".join(out) + "\n")
         print(f"zapisano {os.path.relpath(sciezka, KAT)} — {len(glify)} glifów")
 
-    zapisz(os.path.join(KAT, "src", "glify-dodatki.txt"), dod,
+    zapisz(os.path.join(KAT, "sources", "glify-dodatki.txt"), dod,
            "znaki, których C64 nie ma (ASCII + polska interpunkcja)")
-    zapisz(os.path.join(KAT, "src", "glify-pl.txt"), pl,
+    zapisz(os.path.join(KAT, "sources", "glify-pl.txt"), pl,
            "polskie diakryty (baza C64 + nasze akcenty)")
 
     # ══ render kontrolny ══════════════════════════════════════════════════════

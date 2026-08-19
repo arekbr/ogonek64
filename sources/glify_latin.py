@@ -2,7 +2,7 @@
 """ogonek64 — rozszerzenie do GF Latin Core (319 znaków).
 
 Google Fonts wymaga minimum zestawu `GF_Latin_Core`. Ten moduł dokłada brakujące
-197 znaków do bazowych 124 i zapisuje je jako `src/glify-latin.txt`.
+197 znaków do bazowych 124 i zapisuje je jako `sources/glify-latin.txt`.
 
 Podział pracy:
   * 143 litery z akcentem  -> SKŁADANE AUTOMATYCZNIE z rozkładu Unicode
@@ -309,7 +309,7 @@ def main():
     core = set(glyphsets.unicodes_per_glyphset("GF_Latin_Core"))
     istniejace = {}
     for plik in ("glify-baza.txt", "glify-dodatki.txt", "glify-pl.txt"):
-        istniejace.update(czytaj(os.path.join(KAT, "src", plik)))
+        istniejace.update(czytaj(os.path.join(KAT, "sources", plik)))
 
     nowe, powody, nieudane = {}, defaultdict(int), []
 
@@ -387,9 +387,9 @@ def main():
         out.append(f"U+{kod:04X} {nazwa}")
         out.extend(g)
         out.append("")
-    open(os.path.join(KAT, "src", "glify-latin.txt"), "w", encoding="utf-8").write("\n".join(out) + "\n")
+    open(os.path.join(KAT, "sources", "glify-latin.txt"), "w", encoding="utf-8").write("\n".join(out) + "\n")
 
-    print(f"zapisano src/glify-latin.txt — {len(nowe)} glifow")
+    print(f"zapisano sources/glify-latin.txt — {len(nowe)} glifow")
     for k, v in sorted(powody.items(), key=lambda x: -x[1]):
         print(f"   {v:4}  {k}")
     razem = set(istniejace) | set(nowe)

@@ -8,7 +8,7 @@ Cztery odmiany, licencja SIL OFL 1.1, budowa z czytelnego źródła tekstowego.
 ✅ **Przechodzi QA Google Fonts bez zarzutu** — `fontbakery check-googlefonts`:
 **0 FAIL** na 455 kontrolach dla każdej z trzech rodzin.
 
-![Ogonek 64 Mono](docs/mono-regular.png)
+![Ogonek 64 Mono](documentation/mono-regular.png)
 
 ## Odmiany
 
@@ -45,7 +45,7 @@ nie istnieją. Cztery decyzje, które warto znać:
 ## Skąd biorą się glify
 
 Baza łacińska odwzorowuje krój znakowy domowego komputera 8-bitowego z 1982 roku.
-W repozytorium **nie ma żadnej binarki ROM** — źródłem jest `src/glify-*.txt`,
+W repozytorium **nie ma żadnej binarki ROM** — źródłem jest `sources/glify-*.txt`,
 czytelny plik tekstowy, w którym `#` to zapalony piksel, a `.` zgaszony:
 
 ```
@@ -67,22 +67,40 @@ U+0104 LATIN CAPITAL LETTER A WITH OGONEK
 Kształty liter nie podlegają prawu autorskiemu w USA (`37 CFR § 202.1(e)`,
 *Eltra Corp. v. Ringer*, 4th Cir. 1978), a przy siatce 8×8 nie ma w nich miejsca na
 twórczy wybór — czytelna wielka litera alfabetu łacińskiego ma w tej rozdzielczości
-jedno sensowne rozwiązanie. Szczegóły i źródła: [`docs/PRAWO.md`](docs/PRAWO.md).
+jedno sensowne rozwiązanie. Szczegóły i źródła: [`documentation/PRAWO.md`](documentation/PRAWO.md).
 
 Diakryty, interpunkcja polska i osiem znaków ASCII, których pierwowzór nie ma
 (`\ ^ _ \` { | } ~`), są zaprojektowane w tym projekcie od zera.
 
 ## Budowa
 
-```bash
-python3 -m venv .venv --system-site-packages
-.venv/bin/pip install "fonttools[pathops,woff]" pillow
+Wszystko jednym poleceniem — skrypt sam zakłada `.venv` i doinstalowuje zależności
+z `requirements.txt`, nie dotykając pakietów systemowych:
 
-.venv/bin/python lib/zrob_glify.py     # glify pochodne -> src/glify-{dodatki,pl}.txt
-.venv/bin/python lib/glify_latin.py    # GF Latin Core -> src/glify-latin.txt
-.venv/bin/python lib/buduj.py          # -> build/*.ttf
-.venv/bin/python tests/kontrola.py     # kontrola tabel + pokrycie Latin Core + rendery
+```bash
+./build.sh
 ```
+
+Wynik: `fonts/ttf/*.ttf` + `fonts/webfonts/*.woff2`, na koniec kontrola.
+Przełączniki: `--skip-tests` (bez kontroli), `--no-venv` (użyj `python3` z PATH).
+
+Poszczególne kroki, gdyby trzeba było uruchomić je osobno:
+
+```bash
+.venv/bin/python sources/zrob_glify.py   # glify pochodne -> sources/glify-{dodatki,pl}.txt
+.venv/bin/python sources/glify_latin.py  # GF Latin Core -> sources/glify-latin.txt
+.venv/bin/python sources/buduj.py        # -> fonts/ttf/*.ttf
+.venv/bin/python sources/webfonts.py     # -> fonts/webfonts/*.woff2
+.venv/bin/python tests/kontrola.py       # tabele + pokrycie Latin Core + rendery do build/
+```
+
+### Układ katalogów
+
+Zgodny z [preferowaną strukturą Google Fonts](https://googlefonts.github.io/gf-guide/upstream.html):
+`sources/` (źródła glifów i skrypty budujące) · `fonts/` (gotowe binaria) ·
+`documentation/` (materiały i obrazki) · `tests/` (kontrola) · `AUTHORS.txt` ·
+`CONTRIBUTORS.txt` · `OFL.txt` · `requirements.txt` · `build.sh`.
+Katalog `build/` jest efemeryczny (rendery kontrolne) i nie wchodzi do repozytorium.
 
 QA profilem Google Fonts (katalog `gf/` ma układ wymagany przez repozytorium `google/fonts`):
 
@@ -97,8 +115,8 @@ zobaczy nasz główny `OFL.txt` w katalogu wyżej i zgłosi „dwie licencje".
 ## Instalacja
 
 ```bash
-cp build/*.ttf ~/Library/Fonts/                 # macOS
-cp build/*.ttf ~/.local/share/fonts/ && fc-cache -f   # Linux
+cp fonts/ttf/*.ttf ~/Library/Fonts/                 # macOS
+cp fonts/ttf/*.ttf ~/.local/share/fonts/ && fc-cache -f   # Linux
 ```
 
 ## Geometria
@@ -146,6 +164,33 @@ Co to znaczy w praktyce:
 - ❌ Nie sprzedawaj samego fonta jako produktu.
 
 Jeśli użyjesz go w czymś fajnym — daj znać, będzie mi miło. To prośba, nie paragraf.
+
+## Jak powstał — udział narzędzi AI
+
+Mówię o tym wprost, bo lepiej wiedzieć, co się instaluje.
+
+Font jest **generowany kodem**, nie rysowany w edytorze fontów. Kod (`sources/*.py`),
+skrypty kontroli i to README powstały **z pomocą asystenta AI** — Claude (Anthropic) —
+prowadzonego i weryfikowanego przeze mnie.
+
+Podział jest taki:
+
+- **Baza łacińska** to odwzorowanie kroju znakowego 8-bitowego komputera z 1982 roku,
+  wyeksportowane **jeden raz** jako mapa pikseli i od tej chwili utrzymywane jako plik
+  tekstowy w tym repozytorium. Nie jest niczyim rysunkiem — to siatka 8×8, w której
+  czytelna litera ma jedno sensowne rozwiązanie (patrz [`documentation/PRAWO.md`](documentation/PRAWO.md)).
+- **Diakryty, interpunkcja i znaki GF Latin Core** są składane **deterministycznie**:
+  litera bazowa + akcent, wg reguł zapisanych w `sources/zrob_glify.py`
+  i `sources/glify_latin.py`. Ten sam wsad zawsze daje ten sam wynik — dwa niezależne
+  buildy różnią się wyłącznie datą w tabeli `head`.
+- **Decyzje kształtu podejmował i zatwierdzał człowiek, na renderach.** To one
+  zdecydowały o jakości, i żadnej nie da się wyprowadzić z reguły: dwa wiersze akcentu
+  zamiast jednego, piksel odstępu między akcentem a literą, rozróżnianie `Ź`/`Ż`
+  grubością zamiast pozycją, kreska `Ł` liczona z trzonu litery, akcent zastępujący
+  kropkę nad `i`/`j`. Każda z nich wzięła się z obejrzenia wydruku i uznania, że
+  poprzednia wersja jest nieczytelna — kontrole tabel przepuszczały obie.
+
+Krótko: **narzędzie pisało kod, człowiek decydował, jak font ma wyglądać, i to sprawdzał.**
 
 ## Zastrzeżenie
 

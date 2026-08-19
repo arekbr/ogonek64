@@ -1,4 +1,5 @@
 .venv/
+build/
 build-ciasny/
 build-odstep/
 gf-czysty*/

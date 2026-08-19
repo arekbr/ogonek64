@@ -14,7 +14,8 @@ except Exception as e:
     print(f"UWAGA: brak paczki glyphsets ({e}) — pomijam kontrole GF Latin Core")
 
 KAT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BUILD = os.path.join(KAT, "build")
+BUILD = os.path.join(KAT, "fonts", "ttf")      # skad czytamy gotowe fonty
+RENDER = os.path.join(KAT, "build")            # dokad ida rendery kontrolne (katalog ignorowany przez gita)
 
 POLSKIE = "ĄĆĘŁŃÓŚŹŻąćęłńóśźż"
 ASCII_WYM = "".join(chr(c) for c in range(0x20, 0x7F))
@@ -63,7 +64,7 @@ def sprawdz_tabele(sciezka):
 def main():
     pliki = sorted(p for p in os.listdir(BUILD) if p.endswith(".ttf"))
     if not pliki:
-        print("BRAK plików .ttf w build/ — najpierw lib/buduj.py"); return 1
+        print("BRAK plików .ttf w fonts/ttf/ — najpierw ./build.sh"); return 1
 
     print("=" * 78)
     print("KONTROLA TABEL")
@@ -112,7 +113,8 @@ def main():
         d.text((MARG, MARG // 2), p.replace(".ttf", ""), font=font, fill=(150, 160, 220))
         for i, t in enumerate(PROBKI):
             d.text((MARG, MARG + interlinia * (i + 1)), t, font=font, fill=(134, 148, 255))
-        out = os.path.join(BUILD, p.replace(".ttf", ".png"))
+        os.makedirs(RENDER, exist_ok=True)
+        out = os.path.join(RENDER, p.replace(".ttf", ".png"))
         img.save(out)
         print(f"\nrender: {os.path.relpath(out, KAT)}  ({img.width}x{img.height})")
 
@@ -130,7 +132,7 @@ def main():
         y += interlinia
         d.text((MARG, y), "Zażółć gęślą jaźń ĄĘŁŃŚŹŻ", font=f, fill=(134, 148, 255))
         y += interlinia
-    zest = os.path.join(BUILD, "porownanie-odmian.png")
+    zest = os.path.join(RENDER, "porownanie-odmian.png")
     img.save(zest)
     print(f"render zbiorczy: {os.path.relpath(zest, KAT)}")
 
